@@ -1,0 +1,37 @@
+{
+  "name": "group2---button-counter",
+  "version": "1.0.0",
+  "description": "Button counter with Turso + TypeScript + SvelteKit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "node ./dist/server.js",
+    "dev": "tsc -w & nodemon dist/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ngovkimyou/Group2---button-counter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Ngovkimyou/Group2---button-counter/issues"
+  },
+  "homepage": "https://github.com/Ngovkimyou/Group2---button-counter#readme",
+  "dependencies": {
+    "@libsql/client": "^0.17.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.0",
+    "nodemon": "^3.1.11",
+    "typescript": "^5.9.3"
+  }
+}
