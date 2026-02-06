@@ -23,7 +23,7 @@ const db = createClient({
 // 1) Get current count
 app.get("/api/count", async (_req, res) => {
   const result = await db.execute(
-    "SELECT total_click FROM counter WHERE id = 1");
+    "SELECT total_click FROM counter WHERE id = 1"); 
   const value = Number(result.rows[0]?.total_click ?? 0);
   res.json({ value });
 });
