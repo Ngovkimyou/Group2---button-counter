@@ -5,10 +5,19 @@ import { TURSO_DATABASE_URL, TURSO_AUTH_TOKEN } from '$env/static/private';
 const db = createClient({ url: TURSO_DATABASE_URL, authToken: TURSO_AUTH_TOKEN });
 
 export async function POST() {
-  await db.execute('UPDATE counter SET total_click = total_click + 1 WHERE id = 1');
+  try {
+    await db.execute(`
+      INSERT INTO counter (id, total_click)
+      VALUES (1, 1)
+      ON CONFLICT(id) DO UPDATE SET total_click = total_click + 1
+    `);
 
-  const r = await db.execute('SELECT total_click FROM counter WHERE id = 1');
-  const count = Number(r.rows[0]?.total_click ?? 0);
+    const r = await db.execute(`SELECT total_click FROM counter WHERE id = 1`);
+    const count = Number(r.rows[0]?.total_click ?? 0);
 
-  return json({ count });
+    return json({ count });
+  } catch (err) {
+    console.error(err);
+    return json({ error: String(err) }, { status: 500 });
+  }
 }
