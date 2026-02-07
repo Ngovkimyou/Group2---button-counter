@@ -1,4 +1,4 @@
-# Group2---button-counter
+﻿# Group2---button-counter
  Creating a simple button-counter UI with SvelteKit framework for front-end, TypeScript as part of back-end integration, and Turso for database. 
  
  This project aims for simulating a real-world working environment, be able to collaborate with team members, understanding client requirements, and write documentation.
@@ -31,6 +31,8 @@ npm run dev
 ```
 
 from `npm run dev`, click the provided url http://localhost:5173/ to test it out. If it show a default welcome page, then the framework setup is done!
+
+💡Get to know this framework, database integration, and code execution, please visit **Build From Scratch** ➡️ Start working on **Front-end Working Place**, **Back-end Configuration**, **Turso Database Connection**, and **Code Execution and Flowchart**.
 
 <br>
 
@@ -126,17 +128,30 @@ src/routes/api/count/+server.ts
 ```md
 src/routes/api/increment/+server.ts
 ```
+💭*Optional* : if you prefer to create table database via file instead
 ```md
 src/routes/api/init/+server.ts
 ```
+<br>
+
 If you are famaliar to **POST** and **GET** method,
-- GET /api/count      ➡️ It retrieves the data values from database
-- POST / api/incremet ➡️ It updates data values *(The U-Update of CRUD)*
-- POST /api/init      ➡️ This endpoint creates the table if it does not exist, inserts the initial row with count = 0. ⚠️ This endpoint is used once during setup and can be kept or removed afterward.
+- GET /api/count      ➡️ It retrieves the data values from database  *(The R-READ of CRUD)*
+- POST / api/incremet ➡️ It inserts and updates data values *(The U-Update of CRUD)*
+- POST /api/init      ➡️ This endpoint creates the table if it does not exist, inserts the initial row with count = 0. *(The C-Create of CRUD)* ⚠️ This endpoint is used once during setup and can be kept or removed afterward.
 
 These `+server.ts` are where we will be working on with the back-end coding.
 
-⚠️**Note:** if you ever encounter modules / libraries being undefined or unregconized, make sure you properly install on your project folder.
+<br>
+
+⚠️**Note:** During `npm run dev` if an error message with **adapter-auto** module not found appeared, worry not, this is common setup issue when we chose **Node Adapter** during SvelteKit setup. In **svelte.config.js** file, you likely have this line `import adapter from '@sveltejs/adapter-auto';` this adapter-auto might not exist on your node module. Instead, we install **adapter-node** run:
+
+```bash
+npm install -D @sveltejs/adapter-node
+```
+
+After that, in **svelte.config.js** change to  `import adapter from '@sveltejs/adapter-node`
+
+⚠️**Note:** if you use custom modules / libraries and ever encounter those being undefined or unregconized, make sure you properly install on your project folder, otherwise run `npm install` for default dependacies. Go check **package.json** file for more details.
 
 </details>
 
