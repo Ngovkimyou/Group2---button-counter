@@ -1,13 +1,10 @@
-﻿# Group2---button-counter
- Creating a simple button-counter UI with SvelteKit for front-end, TypeScript as part of back-end integration, and Turso for database. 
+# Group2---button-counter
+ Creating a simple button-counter UI with SvelteKit framework for front-end, TypeScript as part of back-end integration, and Turso for database. 
  
  This project aims for simulating a real-world working environment, be able to collaborate with team members, understanding client requirements, and write documentation.
  
- This group project's README.md is intentionally designed as a guildline to ensure all team members have leverage access to shared resources and can stay aligned and work efficiently.
+ In this group project, the README.md file is intentionally designed as a guildline to ensure all team members have leverage access to shared resources and can stay aligned and work efficiently. To enable team members to learn and explore comprehensively, this guideline will be divided into ``Quick Setup`` and ``Build From Scratch``
 
-<details>
-<summary><h2>🛠️ TypeScript Setup</h2></summary> 
-  
 ### ⚠️ Prerequisite  
 ---
   [Node.js installation](https://nodejs.org/en/download/current)
@@ -15,9 +12,35 @@
   To confirm it properly installed run: `node -v` then `npm -v`
 
 <br>
+
+## **Quick Setup**
+
+if you have not cloned from repository, run command:
+```bash
+git clone https://github.com/Ngovkimyou/Group2---button-counter.git
+cd Group2---button-counter
+npm install
+npm run dev
+```
+
+if have already cloned, run command:
+```bash
+git pull
+npm install
+npm run dev
+```
+
+from `npm run dev`, click the provided url http://localhost:5173/ to test it out. If it show a default welcome page, then the framework setup is done!
+
+💡Get to know this framework, database integration, and code execution, please visit **Build From Scratch** ➡️ Start working on **Front-end Working Place**, **Back-end Configuration**, **Turso Database Connection**, and **Code Execution and Flowchart**.
+
+<br>
+
+## **Build From Scratch**
+
+<details>
+<summary><h2>📥 TypeScript Installation</h2></summary> 
   
-### 📥 Typescript Installation
----
 ```bash
 npm install -g typescript
 ```
@@ -28,64 +51,50 @@ To confirm it properly installed run: `tsc -v`
 </details>
 
 <details>
-<summary><h2>⚙️ Backend Configuration</h2></summary> 
+<summary><h2>🛠️ SvelteKit Integration</h2></summary> 
 
-This is where front-end requests to fetch data from database. Since we are using **Turso** as database, an authentication is needed to be stored safely in `.env` file. We need a hosting server **Express** to handle API/route, and browser traffic control (HTTP request) **CORS**.
-
+Inside **Group2---button-counter** folder, run command:
 ```bash
-npm init -y
-npm i express cors dotenv @libsql/client
-npm i -D typescript @types/node @types/express @types/cors
-npx tsc --init
+npx sv create .
 ```
-<br>
+Target this step-by-step:
+<p>
+  <img src="assets/gl-1.png" width="500" />
 
-### 🔧 tsconfig.json 
+  <img src="assets/gl-2.png" width="500" />
 
-Add:
-```md
-"moduleResolution": "nodenext",
-```
+  <img src="assets/gl-3.png" width="500" />
 
-Change: 
-```md
-"target": "esnext",     ➡️ "target": "es2020",
+  <img src="assets/gl-4.png" width="500" />
 
-"types": [],            ➡️ "types": ["node"],
+  <img src="assets/gl-5.png" width="500" />
+</p>
 
-"declaration": true,    ➡️ "declaration": false,
-
-"declarationMap": true, ➡️ "declarationMap": false,
+After setup:
+```bash
+npm install
+npm run dev
 ```
 
-<br>
+The application runs locally at http://localhost:5173
 
-💭*Optional*
+</details>
 
-If you prefer to work on a clean structural folder do consider uncomment / enable this:
-```md
-// "rootDir": "./src",
-// "outDir": "./dist",
-```
-* All `.ts` files are stored in **src folder**
-* Everytime you compile file to `.js`, those files will be stored in **dist folder** automatically.
+<details>
+<summary><h2>🖼️ Front-end Working Place</h2></summary> 
 
-<br>
+`src/routes/+page.svelte` is the SvelteKit equivalent of `index.html`
 
-### 🔧 package.json
+To create an external **CSS** file, under **routes** folder, create `app.css`. After that in `src/routes/+layout.svelte` import its path. For example: `import '../app.css';`
 
-Under scripts variable, add: 
-```md
-"build": "tsc",
-"start": "node ./dist/server.js",
-```
+If you have multiples **CSS** files, it's a good practice to organize in `src/styles/<ALL-YOUR-CSS-FILES>`, then import all those names in `src/routes/+layout.svelte`.
 
-Change: 
-```md
-"type": "commonjs", ➡️ "type": "module",
-```
+</details>
 
-<br>
+<details>
+<summary><h2>⚙️ Back-end Configuration</h2></summary> 
+
+This is where front-end requests to fetch data from database. Since we are using **Turso** as database, an authentication is needed to be stored safely in `.env` file. 
 
 ### 🔧 Creat `.env` file
 This is where you store your credential token and url from Turso. 
@@ -105,73 +114,44 @@ Copy this into your `.env` file.
 # Environment variables for Turso database connection
 TURSO_DATABASE_URL= <YOUR TURSO ACCOUNT URL>
 TURSO_AUTH_TOKEN= <YOUR TOKEN>
-PORT=3000
 
 ```
-
-⚠️**Note:** create `.gitignore` file and paste this:
-```md
-.env
-node_modules/
-dist/   ⬅️ if you have dist folder
-```
-This prevent credential data, unnecessary modules, or back-end configuration from being push the github public repository.
+⚠️ To get your token and Turso url, go to **Turso Database Connection** section.
 
 <br>
 
-### 🔧 Create `server.ts` file
-This is where your back-end communicate with database. Paste this:
-```ts
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
-import { createClient } from "@libsql/client";
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// Serve frontend files (index.html, style.css, main.js)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use(express.static(path.join(__dirname, ".."))); ⬅️//if you don't have dist folder, please delete ".."
-
-// Initialize Turso database client
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN!,
-});
-
-// 1) Get current count
-app.get("/api/count", async (_req, res) => {
-  const result = await db.execute(
-    "SELECT total_click FROM counter WHERE id = 1");
-  const value = Number(result.rows[0]?.total_click ?? 0);
-  res.json({ value });
-});
-
-// 2) Increment count + return new value
-app.post("/api/increment", async (_req, res) => {
-  await db.execute(
-    "UPDATE counter SET total_click = total_click + 1 WHERE id = 1");
-
-  const result = await db.execute(
-    "SELECT total_click FROM counter WHERE id = 1");
-  const value = Number(result.rows[0]?.total_click ?? 0);
-
-  res.json({ value });
-});
-
-// Start server on port 3000
-const port = Number(process.env.PORT ?? 3000);
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
-
+### 🔧 Create `+server.ts` files
+This is where your back-end communicates with database. Maintain this structure for better readability:
+```md
+src/routes/api/count/+server.ts
 ```
-⚠️**Note:** if you ever encounter modules / libraries being undefined, make sure you follow `tsconfig.json` and `package.json` setup.
+```md
+src/routes/api/increment/+server.ts
+```
+💭*Optional* : if you prefer to create table database via file instead
+```md
+src/routes/api/init/+server.ts
+```
+<br>
+
+If you are famaliar to **POST** and **GET** method,
+- GET /api/count      ➡️ It retrieves the data values from database  *(The R-READ of CRUD)*
+- POST / api/incremet ➡️ It inserts and updates data values *(The U-Update of CRUD)*
+- POST /api/init      ➡️ This endpoint creates the table if it does not exist, inserts the initial row with count = 0. *(The C-Create of CRUD)* ⚠️ This endpoint is used once during setup and can be kept or removed afterward.
+
+These `+server.ts` are where we will be working on with the back-end coding.
+
+<br>
+
+⚠️**Note:** During `npm run dev` if an error message with **adapter-auto** module not found appeared, worry not, this is common setup issue when we chose **Node Adapter** during SvelteKit setup. In **svelte.config.js** file, you likely have this line `import adapter from '@sveltejs/adapter-auto';` this adapter-auto might not exist on your node module. Instead, we install **adapter-node** run:
+
+```bash
+npm install -D @sveltejs/adapter-node
+```
+
+After that, in **svelte.config.js** change to  `import adapter from '@sveltejs/adapter-node`
+
+⚠️**Note:** if you use custom modules / libraries and ever encounter those being undefined or unregconized, make sure you properly install on your project folder, otherwise run `npm install` for default dependacies. Go check **package.json** file for more details.
 
 </details>
 
@@ -195,37 +175,21 @@ VALUES (1, 0);
 </details>
 
 <details>
-<summary><h2>🖼️ SvelteKit Integration</h2></summary> 
-</details>
-
-<details>
 <summary><h2>🗺️ Code Execution and Flowchart</h2></summary> 
 
 Once you have done with new changes, execute the following commands:
+
+**Production ready**
 ```bash
 npm run build
-npm run start
+npm run preview
 ```
-`npm run build` will compile all `.ts` files into `.js` inside **dist** folder (if you are using **dist** structure option)
-
-After `npm run start` click the provided url that looks like this  http://localhost:3000 This is the hosting server from `server.js`
 
 <br>
 
 💭*Optional*
 
-If you prefer to work on development mode that automatically compiles on live when working on `.ts` files, in your terminal install `nodemon`:
-```bash
-npm install -D nodemon
-```
-
-After that, in `package.json` file under scripts variabes, add:
-
-```md
-"dev": "tsc -w & nodemon dist/server.js"
-```
-
-Now it will recompile on change by executing:
+If you prefer to work on development mode that automatically recompiles on change:
 
 ```bash
 npm run dev
@@ -233,11 +197,7 @@ npm run dev
 
 <br>
 
-*💡 Useful Tips* : If you want to compile a specific file:
-
-```bash
-tsc <file-name>
-```
+*💡 Useful Tips* : It is recommend to run `npm run dev` during performing changes, and everytime you have done with changes excecute `npm run build`.
 
 <br>
 
