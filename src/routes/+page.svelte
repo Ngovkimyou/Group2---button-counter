@@ -30,12 +30,19 @@
     });
 </script>
 
-<main>
-    <h1>Button Counter</h1>
+<main class="p-12 text-center">
+    <h1 class="text-3xl font-bold mb-6">Button Counter</h1>
+    
     {#if loading}
-        <p>Loading...</p>
+        <p class="text-xl text-gray-500">Loading...</p>
     {:else}
-        <p>Total Clicks: {count}</p>
-        <button on:click={increment}>Click Me :D</button>
+        <p class="text-xl font-semibold mb-8">Total Clicks: <span class="text-[#5f4fd6]">{count}</span></p>
+        
+        <button 
+            on:click={increment}
+            class="bg-[#6c5ce7] px-6 py-3 text-xs font-bold text-white rounded cursor-pointer transition-all ease-in-out duration-100 shadow-[0_5px_0_0_#a29bfe] active:translate-y-[5px] active:shadow-none"
+        >
+        Click Me
+        </button>
     {/if}
 </main>
