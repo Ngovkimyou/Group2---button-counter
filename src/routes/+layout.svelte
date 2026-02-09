@@ -3,6 +3,7 @@
 	import '../app.css';
 
 	let { children } = $props();
+	import "../app.css";
 </script>
 
 <svelte:head>
