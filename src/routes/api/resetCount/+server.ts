@@ -1,17 +1,16 @@
 import client from '$lib/server/db';
 import { json } from "@sveltejs/kit";
 
-export async function POST({ request }): Promise<Response> {
-    const data: any = await request.json();
-    console.log("@increment -> RECEIVED DATA:", data);
+export async function POST(): Promise<Response> {
+    
+    console.log("@resetCount -> TRIGGERED!");
 
-    const amount = data.count; 
     
     try {
         await client.execute({
             // Use clear spacing around the operator
-            sql: "UPDATE Counter SET Total_Click = Total_Click + ? WHERE id = 1",
-            args: [amount]
+            sql: "UPDATE Counter SET Total_Click = ? WHERE id = 1",
+            args: [0]
         });
 
         return json({ success: true });

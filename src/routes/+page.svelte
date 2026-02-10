@@ -19,6 +19,23 @@
     });
   } 
 
+  async function decrementClicks(count: number): Promise<void> {
+    await fetch('/api/decrement', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ count })
+    });
+  } 
+
+  async function resetClick(): Promise<void> {
+    await fetch('/api/resetCount', {
+      method: 'POST',
+    });
+  } 
+
+
   // This is the fix: It only runs in the browser
   onMount(async () => {
     count = await getTotalClicks();
@@ -26,7 +43,23 @@
 
   async function increment() {
     count = count + 1; 
-    await incrementClicks(1); // Fixed the argument count [cite: 6]
+    await incrementClicks(1); 
+  }
+
+  async function decrement() {
+    if(count > 0 ) {
+      count = count - 1; 
+      await decrementClicks(1);
+    }
+    else {
+      alert("Count cannot be negative!");
+    } 
+  }
+
+  async function reset() {
+    count = 0;
+    await resetClick();
+
   }
 
   // Moved inside the script properly
@@ -39,7 +72,15 @@
 <p>You clicked {count} times!</p>
 
 <button onclick={increment}>
-  Click me!
+  +1
+</button>
+
+<button onclick={decrement}>
+  -1
+</button>
+
+<button onclick={reset}>
+  Reset
 </button>
 
 <!-- This is CSS - makes it look nice -->

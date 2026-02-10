@@ -3,14 +3,14 @@ import { json } from "@sveltejs/kit";
 
 export async function POST({ request }): Promise<Response> {
     const data: any = await request.json();
-    console.log("@increment -> RECEIVED DATA:", data);
+    console.log("@decrement -> RECEIVED DATA:", data);
 
     const amount = data.count; 
     
     try {
         await client.execute({
             // Use clear spacing around the operator
-            sql: "UPDATE Counter SET Total_Click = Total_Click + ? WHERE id = 1",
+            sql: "UPDATE Counter SET Total_Click = Total_Click - ? WHERE id = 1",
             args: [amount]
         });
 
@@ -21,3 +21,4 @@ export async function POST({ request }): Promise<Response> {
         return json({ error: errorMessage }, { status: 500 });
     }
 }
+
