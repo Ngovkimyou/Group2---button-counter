@@ -1,37 +1,41 @@
 <script lang="ts">
-  import { onMount } from 'svelte'; // Add this import
+  import { onMount } from 'svelte'; 
 
-  let count = $state(0); // Initialize with a number, not a function 
+  let count = $state(0);
 
   async function getTotalClicks(): Promise<number> {
-    const response = await fetch('/api/count'); 
+    const response = await fetch('/api'); 
     const data = await response.json(); 
     return data.total_clicks;
   }
 
-  async function incrementClicks(count: number): Promise<void> {
-    await fetch('/api/increment', {
+  async function incrementClicks(count: number, mode:string = "increase"): Promise<void> {
+    await fetch('/api', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ count })
+      body: JSON.stringify({ count, mode })
     });
   } 
 
-  async function decrementClicks(count: number): Promise<void> {
-    await fetch('/api/decrement', {
+  async function decrementClicks(count: number, mode:string = "decrease"): Promise<void> {
+    await fetch('/api', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ count })
+      body: JSON.stringify({ count, mode })
     });
   } 
 
-  async function resetClick(): Promise<void> {
-    await fetch('/api/resetCount', {
+  async function resetClick(mode:string = "reset"): Promise<void> {
+    await fetch('/api', {
       method: 'POST',
+            headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ mode })
     });
   } 
 
@@ -85,6 +89,7 @@
 
 <!-- This is CSS - makes it look nice -->
 <style>
+
   h1 {
     color: blue;
     font-family: Arial;
