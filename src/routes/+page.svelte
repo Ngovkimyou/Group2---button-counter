@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from 'svelte';
 
-    let count = 0;
-    let loading = true;
+    let count = $state(0);
+    let loading = $state(true);
 
     const fetchCount = async () => {
         try {
-            const response = await fetch('/api');
+            const response = await fetch('/api', { method: 'GET' });
             const data = await response.json();
             count = data.count;
         } catch (error) {
@@ -16,18 +16,65 @@
         }
     };
 
-    const increment = async () => {
-        try {
-            await fetch('/api', { method: 'POST' });
-            await fetchCount();
-        } catch (error) {
-            console.error('Error incrementing count:', error);
-        }
-    };
+    const incrementClicks = async(count: number, mode:string = "increase"): Promise<void> => {
+        await fetch('/api', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ count, mode })
+        });
+    } 
 
-    onMount(() => {
-        fetchCount();
+    const decrementClicks = async(count: number, mode:string = "decrease"): Promise<void> => {
+        await fetch('/api', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ count, mode })
+        });
+    } 
+
+    const resetClick = async(mode:string = "reset"): Promise<void> => {
+        await fetch('/api', {
+        method: 'POST',
+                headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mode })
+        });
+    } 
+
+
+    // This is the fix: It only runs in the browser
+    onMount(async () => {
+    await fetchCount();
     });
+
+    async function increment() {
+    count = count + 1; 
+    await incrementClicks(1); 
+    }
+
+    async function decrement() {
+    if(count > 0 ) {
+        count = count - 1; 
+        await decrementClicks(1);
+    }
+    else {
+        alert("Count cannot be negative!");
+    } 
+    }
+
+    async function reset() {
+    count = 0;
+    await resetClick();
+
+    }
+
+    // Moved inside the script properly
+    $inspect(count); 
 </script>
 
 <main class="p-12 text-center">
@@ -39,10 +86,24 @@
         <p class="text-xl font-semibold mb-8">Total Clicks: <span class="text-[#5f4fd6]">{count}</span></p>
         
         <button 
-            on:click={increment}
+            onclick={increment}
             class="bg-[#6c5ce7] px-6 py-3 text-xs font-bold text-white rounded cursor-pointer transition-all ease-in-out duration-100 shadow-[0_5px_0_0_#a29bfe] active:translate-y-[5px] active:shadow-none"
         >
-        Click Me
+        +1
+        </button>
+                <button 
+            onclick={decrement}
+            class="bg-[#6c5ce7] px-6 py-3 text-xs font-bold text-white rounded cursor-pointer transition-all ease-in-out duration-100 shadow-[0_5px_0_0_#a29bfe] active:translate-y-[5px] active:shadow-none"
+        >
+        -1
+        </button>
+                <button 
+            onclick={reset}
+            class="bg-[#6c5ce7] px-6 py-3 text-xs font-bold text-white rounded cursor-pointer transition-all ease-in-out duration-100 shadow-[0_5px_0_0_#a29bfe] active:translate-y-[5px] active:shadow-none"
+        >
+        Reset
         </button>
     {/if}
 </main>
+
+
