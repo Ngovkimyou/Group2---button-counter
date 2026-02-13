@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { shortcuts } from "$lib/shortcuts";
 
     let count = $state(0);
     let loading = $state(true);

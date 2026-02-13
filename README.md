@@ -1,4 +1,4 @@
-﻿# Group2---button-counter
+# Group2---button-counter
  Creating a simple button-counter UI with SvelteKit framework for front-end, TypeScript as part of back-end integration, and Turso for database. 
  
  This project aims for simulating a real-world working environment, be able to collaborate with team members, understanding client requirements, and write documentation.
