@@ -78,7 +78,13 @@
     $inspect(count); 
 </script>
     <!-- Moyheang only need to replace the script part above -->
-<main　class="h-screen bg-gray-800 p-12">
+<main use:shortcuts={{
+    inc: increment,
+    dec: decrement,
+    reset,
+    getCount: () => count,
+    isLoading: () => loading
+  }}　class="h-screen bg-gray-800 p-12">
     <div class="w-[50%] mx-auto bg-[#C0C0C0] p-2 border-2 border-t-[#dfdfdf] border-l-[#dfdfdf] border-b-[#808080] border-r-[#808080] shadow-[2px_2px_4px_rgba(0,0,0,0.3)]">
         <div class="flex justify-between items-center bg-[#000080] px-3 py-1 mb-2">
             <div class="flex items-center space-x-2">
