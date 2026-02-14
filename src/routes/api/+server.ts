@@ -1,22 +1,47 @@
-import { createClient } from "@libsql/client";
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
+// ======================================================================================================================
+// Table name: counter
+// Columns:
+// - id (INTEGER PRIMARY KEY)
+// - total_clicks (INTEGER)
+// ======================================================================================================================
 
+import { createClient } from "@libsql/client";
+import { env } from "$env/dynamic/private";
+import { json } from "@sveltejs/kit";
+
+// Helper to create and return a Turso client instance using environment variables
 function getTursoClient() {
   const databaseUrl = env.TURSO_DATABASE_URL;
   const authToken = env.TURSO_AUTH_TOKEN;
+
   if (!databaseUrl || !authToken) {
-    throw new Error('Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN environment variable');
+    throw new Error("Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN environment variable");
   }
+
   return createClient({ url: databaseUrl, authToken });
 }
 
+const db = getTursoClient();
+
+// If row doesn't exist on Turso, insert a row
+async function ensureCounterRow() {
+  await db.execute({
+    sql: "INSERT OR IGNORE INTO counter (id, total_clicks) VALUES (?, ?)",
+    args: [1, 0]
+  });
+}
+
+// GET /api - return the current count
 export async function GET() {
   try {
-    const db = getTursoClient();
-    const { rows } = await db.execute("SELECT total_clicks FROM counter WHERE id = 1");
-    const value = rows[0]?.total_clicks;
-    const count = Number(value) || 0;
+    const { rows } = await db.execute(
+      "SELECT total_clicks FROM counter WHERE id = 1"
+    );
+
+    // If row doesn't exist, return 0
+    const value = (rows?.[0] as any)?.total_clicks;
+    const count = Number(value ?? 0);
+
     return json({ count });
   } catch (error) {
     console.error("Error fetching count:", error);
@@ -24,61 +49,50 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+// POST /api - update the count based on the mode (increase, decrease, reset)
+export async function POST({ request }): Promise<Response> {
   try {
-    const db = getTursoClient();
+    const data = await request.json().catch(() => ({}));
 
-    await db.execute(`
-      INSERT INTO counter (id, total_clicks)
-      VALUES (1, 1)
-      ON CONFLICT(id)
-      DO UPDATE SET total_clicks = total_clicks + 1
-    `);
+    const mode = data?.mode as "increase" | "decrease" | "reset" | undefined;
+    const amount = Number(data?.count ?? 0);
 
-    return json({ success: true });
-  } catch (error) {
-    console.error("Error updating count:", error);
-    return json({ error: "Failed to update count" }, { status: 500 });
-  }
-}
+    if (!mode) return json({ error: "Missing mode" }, { status: 400 });
 
-export async function PUT() {
-  try {
-    const db = getTursoClient();
+    // Ensure row exists ONLY when user clicks actions
+    await ensureCounterRow();
 
-    await db.execute(`
-      INSERT INTO counter (id, total_clicks)
-      VALUES (1, 0)
-      ON CONFLICT(id)
-      DO UPDATE SET total_clicks = 0
-    `);
+    // Perform the appropriate SQL query based on the mode
+    if (mode === "decrease") {
+      await db.execute({
+        sql: "UPDATE counter SET total_clicks = total_clicks - ? WHERE id = 1",
+        args: [amount]
+      });
+    } else if (mode === "increase") {
+      await db.execute({
+        sql: "UPDATE counter SET total_clicks = total_clicks + ? WHERE id = 1",
+        args: [amount]
+      });
+    } else if (mode === "reset") {
+      await db.execute({
+        sql: "UPDATE counter SET total_clicks = ? WHERE id = 1",
+        args: [0]
+      });
+    } else {
+      return json({ error: "Invalid mode" }, { status: 400 });
+    }
 
-    return json({ success: true, count: 0 });
-  } catch (error) {
-    console.error("Error resetting count:", error);
-    return json({ error: "Failed to reset count" }, { status: 500 });
-  }
-}
+    // Optional but nice: return the updated count so frontend can skip a GET
+    const { rows } = await db.execute("SELECT total_clicks FROM counter WHERE id = 1");
+    const newValue = (rows?.[0] as any)?.total_clicks;
+    const count = Number(newValue ?? 0);
 
-export async function PATCH() {
-  try {
-    const db = getTursoClient();
-
-    const result = await db.execute(`
-      UPDATE counter
-      SET total_clicks = CASE 
-        WHEN total_clicks > 0 THEN total_clicks - 1
-        ELSE 0
-      END
-      WHERE id = 1
-      RETURNING total_clicks
-    `);
-
-    const newCount = Number(result.rows[0]?.total_clicks ?? 0);
-
-    return json({ success: true, count: newCount });
-  } catch (error) {
-    console.error("Error decreasing count:", error);
-    return json({ error: "Failed to decrease count" }, { status: 500 });
+    return json({ success: true, count });
+  } catch (e) {
+    console.error("LibSQL Error:", e);
+    return json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 500 }
+    );
   }
 }

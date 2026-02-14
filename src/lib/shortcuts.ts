@@ -16,7 +16,7 @@ export function shortcuts(node: HTMLElement, handlers: ShortcutHandlers) {
   const onKeyDown = (e: KeyboardEvent) => {
     if (handlers.isLoading?.()) return;
     if (isTypingTarget(e.target)) return;
-    // incase we only want to trigger once
+    // Uncomment this incase we only want to trigger once
     // if (e.repeat) return; 
     if (e.ctrlKey || e.altKey || e.metaKey) return;
 
