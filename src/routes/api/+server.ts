@@ -41,3 +41,44 @@ export async function POST() {
     return json({ error: "Failed to update count" }, { status: 500 });
   }
 }
+
+export async function PUT() {
+  try {
+    const db = getTursoClient();
+
+    await db.execute(`
+      INSERT INTO counter (id, total_clicks)
+      VALUES (1, 0)
+      ON CONFLICT(id)
+      DO UPDATE SET total_clicks = 0
+    `);
+
+    return json({ success: true, count: 0 });
+  } catch (error) {
+    console.error("Error resetting count:", error);
+    return json({ error: "Failed to reset count" }, { status: 500 });
+  }
+}
+
+export async function PATCH() {
+  try {
+    const db = getTursoClient();
+
+    const result = await db.execute(`
+      UPDATE counter
+      SET total_clicks = CASE 
+        WHEN total_clicks > 0 THEN total_clicks - 1
+        ELSE 0
+      END
+      WHERE id = 1
+      RETURNING total_clicks
+    `);
+
+    const newCount = Number(result.rows[0]?.total_clicks ?? 0);
+
+    return json({ success: true, count: newCount });
+  } catch (error) {
+    console.error("Error decreasing count:", error);
+    return json({ error: "Failed to decrease count" }, { status: 500 });
+  }
+}
