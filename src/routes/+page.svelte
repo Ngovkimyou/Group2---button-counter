@@ -1,23 +1,28 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { invalidateAll } from '$app/navigation';
     import { shortcuts } from "$lib/shortcuts";
+    import { io } from "socket.io-client";
+    import { browser } from '$app/environment';
 
-    let count = $state(0);
+    
     let loading = $state(true);
-
-    const fetchCount = async () => {
-        try {
-            const response = await fetch('/api', { method: 'GET' });
-            const data = await response.json();
-            count = data.count;
-        } catch (error) {
-            console.error('Error fetching count:', error);
-        } finally {
-            loading = false;
-        }
-    };
+    let {data} = $props();
+    let count = $state(data.count);
+    let socket;
+    loading = false;
+    // try {
+    //     $inspect("Initial data from load function:", data);
+        
+    //     $inspect("At svelte page",count);
+    // } catch (error) {
+    //     console.error('Error fetching count:', error);
+    // } finally {
+    //     loading = false;
+    // }
 
     const incrementClicks = async(count: number, mode:string = "increase"): Promise<void> => {
+
         await fetch('/api', {
         method: 'POST',
         headers: {
@@ -28,6 +33,7 @@
     } 
 
     const decrementClicks = async(count: number, mode:string = "decrease"): Promise<void> => {
+
         await fetch('/api', {
         method: 'POST',
         headers: {
@@ -38,6 +44,7 @@
     } 
 
     const resetClick = async(mode:string = "reset"): Promise<void> => {
+
         await fetch('/api', {
         method: 'POST',
                 headers: {
@@ -48,11 +55,27 @@
     } 
 
 
-    // This is the fix: It only runs in the browser
-    onMount(async () => {
-    await fetchCount();
-    });
+    onMount(() => {
+        // Initialize socket only on the client
+        socket = io("http://localhost:3000");
 
+        socket.on("connect", () => {
+            console.log("Connected to WebSocket server!");
+        });
+
+        socket.on("DATABASE_UPDATED", (payload) => {
+            console.log("Syncing payload:", payload);
+            // payload.newCount comes from your backend updateCount()
+            if (payload.newCount !== undefined) {
+                count = payload.newCount; 
+            }
+        });
+
+        // Cleanup on destroy
+        return () => {
+            socket!.disconnect();
+        };
+    });
     async function increment() {
     count = count + 1; 
     await incrementClicks(1); 

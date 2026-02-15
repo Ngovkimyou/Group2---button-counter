@@ -2,8 +2,8 @@ type ShortcutHandlers = {
   inc: () => void | Promise<void>;
   dec: () => void | Promise<void>;
   reset: () => void | Promise<void>;
-  getCount?: () => number;     // optional, for disabling dec at 0
-  isLoading?: () => boolean;   // optional
+  getCount?: () => number; // optional, for disabling dec at 0
+  isLoading?: () => boolean; // optional
 };
 
 function isTypingTarget(target: EventTarget | null) {
@@ -17,7 +17,7 @@ export function shortcuts(node: HTMLElement, handlers: ShortcutHandlers) {
     if (handlers.isLoading?.()) return;
     if (isTypingTarget(e.target)) return;
     // incase we only want to trigger once
-    // if (e.repeat) return; 
+    // if (e.repeat) return;
     if (e.ctrlKey || e.altKey || e.metaKey) return;
 
     if (e.code === "Space") e.preventDefault();
@@ -37,6 +37,6 @@ export function shortcuts(node: HTMLElement, handlers: ShortcutHandlers) {
   return {
     destroy() {
       window.removeEventListener("keydown", onKeyDown);
-    }
+    },
   };
 }
