@@ -31,7 +31,9 @@
         body: JSON.stringify({ count, mode })
         });
     } 
-
+    const getCout = () => {
+    //     asldkfjasd
+    }
     const decrementClicks = async(count: number, mode:string = "decrease"): Promise<void> => {
 
         await fetch('/api', {
