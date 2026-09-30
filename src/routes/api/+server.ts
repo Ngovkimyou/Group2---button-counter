@@ -1,3 +1,10 @@
+// ======================================================================================================================
+// Table name: counter
+// Columns:
+// - id (INTEGER PRIMARY KEY)
+// - total_clicks (INTEGER)
+// ======================================================================================================================
+
 import { createClient } from "@libsql/client";
 import { Server } from "socket.io";
 import { env } from "$env/dynamic/private";
@@ -11,6 +18,7 @@ const io = new Server(3000, {
   },
 });
 
+// Helper to create and return a Turso client instance using environment variables
 function getTursoClient() {
   const databaseUrl = env.TURSO_DATABASE_URL;
   const authToken = env.TURSO_AUTH_TOKEN;
@@ -20,6 +28,7 @@ function getTursoClient() {
       "Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN environment variable",
     );
   }
+
   return createClient({ url: databaseUrl, authToken });
 }
 
