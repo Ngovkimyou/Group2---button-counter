@@ -11,15 +11,6 @@
     let count = $state(data.count);
     let socket;
     loading = false;
-    // try {
-    //     $inspect("Initial data from load function:", data);
-        
-    //     $inspect("At svelte page",count);
-    // } catch (error) {
-    //     console.error('Error fetching count:', error);
-    // } finally {
-    //     loading = false;
-    // }
 
     const incrementClicks = async(count: number, mode:string = "increase"): Promise<void> => {
 
@@ -31,9 +22,6 @@
         body: JSON.stringify({ count, mode })
         });
     } 
-    const getCout = () => {
-    //     asldkfjasd
-    }
     const decrementClicks = async(count: number, mode:string = "decrease"): Promise<void> => {
 
         await fetch('/api', {
@@ -55,7 +43,6 @@
         body: JSON.stringify({ mode })
         });
     } 
-
 
     onMount(() => {
         // Initialize socket only on the client
