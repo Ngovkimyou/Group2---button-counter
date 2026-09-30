@@ -1,3 +1,15 @@
+import { createClient } from "@libsql/client";
+import { Server } from "socket.io";
+import { env } from "$env/dynamic/private";
+import { json } from "@sveltejs/kit";
+
+// In your backend file
+const io = new Server(3000, {
+  cors: {
+    origin: "http://localhost:5173", // Your SvelteKit dev port
+    methods: ["GET", "POST"],
+  },
+});
 // ======================================================================================================================
 // Table name: counter
 // Columns:
@@ -5,43 +17,35 @@
 // - total_clicks (INTEGER)
 // ======================================================================================================================
 
-import { createClient } from "@libsql/client";
-import { env } from "$env/dynamic/private";
-import { json } from "@sveltejs/kit";
-
 // Helper to create and return a Turso client instance using environment variables
 function getTursoClient() {
   const databaseUrl = env.TURSO_DATABASE_URL;
   const authToken = env.TURSO_AUTH_TOKEN;
 
   if (!databaseUrl || !authToken) {
-    throw new Error("Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN environment variable");
+    throw new Error(
+      "Missing TURSO_DATABASE_URL or TURSO_AUTH_TOKEN environment variable",
+    );
   }
 
   return createClient({ url: databaseUrl, authToken });
 }
 
+// Very Important: it seems that our database have different field names
+// For example, my database have "Total_Click" instead of "total_click"
+// so we need to use the correct field names in our queries
 const db = getTursoClient();
 
-// If row doesn't exist on Turso, insert a row
-async function ensureCounterRow() {
-  await db.execute({
-    sql: "INSERT OR IGNORE INTO counter (id, total_clicks) VALUES (?, ?)",
-    args: [1, 0]
-  });
-}
-
-// GET /api - return the current count
 export async function GET() {
   try {
+    const db = getTursoClient();
+    // Over here might be the casue of the error, since I've changed the field name to "Total_Click"
     const { rows } = await db.execute(
-      "SELECT total_clicks FROM counter WHERE id = 1"
+      "SELECT Total_Click FROM counter WHERE id = 1",
     );
 
-    // If row doesn't exist, return 0
-    const value = (rows?.[0] as any)?.total_clicks;
-    const count = Number(value ?? 0);
-
+    const value = rows[0]?.Total_Click;
+    const count = Number(value) || 0;
     return json({ count });
   } catch (error) {
     console.error("Error fetching count:", error);
@@ -49,50 +53,61 @@ export async function GET() {
   }
 }
 
-// POST /api - update the count based on the mode (increase, decrease, reset)
 export async function POST({ request }): Promise<Response> {
+  const data: any = await request.json();
+  console.log("@src/routes/api -> RECEIVED DATA:", data);
+  console.log("@src/routes/api -> Count:", data.count);
+  let newCount;
   try {
-    const data = await request.json().catch(() => ({}));
+    const mode = data.mode;
 
-    const mode = data?.mode as "increase" | "decrease" | "reset" | undefined;
-    const amount = Number(data?.count ?? 0);
-
-    if (!mode) return json({ error: "Missing mode" }, { status: 400 });
-
-    // Ensure row exists ONLY when user clicks actions
-    await ensureCounterRow();
-
-    // Perform the appropriate SQL query based on the mode
     if (mode === "decrease") {
-      await db.execute({
-        sql: "UPDATE counter SET total_clicks = total_clicks - ? WHERE id = 1",
-        args: [amount]
+      const amount = data.count;
+      const result = await db.execute({
+        // Use clear spacing around the operator
+        sql: "UPDATE Counter SET Total_Click = MAX(0, Total_Click - ?) WHERE id = 1 RETURNING Total_Click",
+        args: [amount],
+      });
+      newCount = result.rows[0].Total_Click;
+      console.log("@src/routes/api -> DECREASE: ", newCount);
+      io.emit("DATABASE_UPDATED", {
+        action: "DECREASE",
+        status: "success",
+        newCount,
       });
     } else if (mode === "increase") {
-      await db.execute({
-        sql: "UPDATE counter SET total_clicks = total_clicks + ? WHERE id = 1",
-        args: [amount]
+      const amount = data.count;
+      const result = await db.execute({
+        // Use clear spacing around the operator
+        sql: "UPDATE Counter SET Total_Click = Total_Click + ? WHERE id = 1 RETURNING Total_Click",
+        args: [amount],
+      });
+      newCount = result.rows[0].Total_Click;
+      console.log("@src/routes/api -> INCREASE: ", newCount);
+      io.emit("DATABASE_UPDATED", {
+        action: "INCREASE",
+        status: "success",
+        newCount,
       });
     } else if (mode === "reset") {
-      await db.execute({
-        sql: "UPDATE counter SET total_clicks = ? WHERE id = 1",
-        args: [0]
+      const result = await db.execute({
+        // Use clear spacing around the operator
+        sql: "UPDATE Counter SET Total_Click = ? WHERE id = 1 RETURNING Total_Click",
+        args: [0],
       });
-    } else {
-      return json({ error: "Invalid mode" }, { status: 400 });
+      newCount = result.rows[0].Total_Click;
+      console.log("@src/routes/api -> RESET: ", newCount);
+      io.emit("DATABASE_UPDATED", {
+        action: "RESET",
+        status: "success",
+        newCount,
+      });
     }
 
-    // Optional but nice: return the updated count so frontend can skip a GET
-    const { rows } = await db.execute("SELECT total_clicks FROM counter WHERE id = 1");
-    const newValue = (rows?.[0] as any)?.total_clicks;
-    const count = Number(newValue ?? 0);
-
-    return json({ success: true, count });
+    return json({ success: true, newCount });
   } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : String(e);
     console.error("LibSQL Error:", e);
-    return json(
-      { error: e instanceof Error ? e.message : String(e) },
-      { status: 500 }
-    );
+    return json({ error: errorMessage }, { status: 500 });
   }
 }
